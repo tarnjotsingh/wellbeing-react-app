@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Home from './Home';
 import SurveyList from './SurveyList';
 import SurveyEdit from './SurveyEdit';
+import QuestionsList from "./SurveyQuestionList";
 
 class App extends Component {
   render() {
@@ -11,8 +12,9 @@ class App extends Component {
         <Router>
           <Switch>
             <Route path="/" exact={true} component={Home}/>
-            <Route path="/surveyManager" exact={true} component={SurveyList}/>
+            <Route path="/survey_manager" exact={true} component={SurveyList}/>
             <Route path="/surveys/:id" component={SurveyEdit}/>
+            <Route path="/questions_test" component={QuestionsList}/>
           </Switch>
         </Router>
     )

@@ -11,7 +11,7 @@ class Home extends Component {
                 <AppNavbar/>
 
                 <Container fluid>
-                    <Button className="mt-4" color="link" tag={Link} to="/surveyManager">Manage all the fantastic surveys</Button>
+                    <Button className="mt-4" color="link" tag={Link} to="/survey_manager">Manage all the fantastic surveys</Button>
                 </Container>
             </div>
         );

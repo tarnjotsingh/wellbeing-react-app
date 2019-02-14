@@ -24,6 +24,12 @@ class AppNavbar extends Component {
                 <Collapse isOpen={this.state.isOpen} navbar>
                     <Nav className="ml-auto" navbar>
                         <NavItem>
+                            <NavLink tag={Link} to="survey_manager">Survey Manager</NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink tag={Link} to="questions_test">Questions Test</NavLink>
+                        </NavItem>
+                        <NavItem>
                             <NavLink href="https://csgitlab.reading.ac.uk/gv009864">CS-GitLab</NavLink>
                         </NavItem>
                     </Nav>

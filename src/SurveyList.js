@@ -3,7 +3,7 @@
  We do not want to render everything under the main App.js, keeping things clean.
  */
 
-import React, {Component, ReactComponent} from "react";
+import React, {Component} from "react";
 import { Button, ButtonGroup, Container, Table} from 'reactstrap';
 import AppNavbar from './AppNavbar';
 import { Link } from 'react-router-dom'
@@ -12,7 +12,10 @@ class SurveyList extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {surveys: [], isLoading: true};
+        this.state = {
+            surveys: [],
+            isLoading: true
+        };
         this.remove = this.remove.bind(this);
     }
 
@@ -24,6 +27,8 @@ class SurveyList extends Component {
         fetch('api/surveys')
             .then(response => response.json())
             .then(data => this.setState({surveys: data, isLoading: false}));
+
+        console.log(this.state.surveys);
     }
 
 
@@ -41,7 +46,7 @@ class SurveyList extends Component {
                 }
             }).then(() => {
                 let updatedSurveys = [...this.state.surveys].filter(i => i.id !== id);
-                this.setState(updatedSurveys)
+                this.setState({surveys: updatedSurveys})
         });
     }
 
@@ -55,11 +60,14 @@ class SurveyList extends Component {
         // List out all of the survey entries from the returned surveys JSON
         const surveyList = surveys.map(survey => {
 
-            const surveyDetails = `${survey.name || '' } ${survey.description || ''}`;
+            //const surveyDetails = `${survey.name || '' } ${survey.description || ''}`;
 
             return <tr key={survey.id}>
                 <td style={{whiteSpace: 'nowrap'}}>{survey.name}</td>
                 <td>{survey.description}</td>
+                <td>
+                    <Button size="sm" color="info" tag={Link} to={"/surveys/" + survey.id + "/questions/"}>Questions</Button>
+                </td>
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/surveys/" + survey.id}>Edit</Button>
@@ -78,18 +86,23 @@ class SurveyList extends Component {
                 <AppNavbar/>
                 <Container fluid>
                     <div className="float-right">
-                        <Button color="success" tag={Link} to="/surveys">Add Survey</Button>
+                        <Button color="success" tag={Link} to="/surveys/new">Add Survey</Button>
                     </div>
 
                     <h3 className="mt-4">Surveys view test</h3>
                     <Table className="mt-4">
                         <thead>
-                            <th width="20%">Name</th>
-                            <th width="50%">Description</th>
-                            <th width="10%">Actions</th>
+                            <tr>
+                                <th width="20%">Name</th>
+                                <th width="50%">Description</th>
+                                <th width="25%">Manage Questions</th>
+                                <th width="10%">Actions</th>
+                            </tr>
                         </thead>
 
-                        <tbody>{surveyList}</tbody>
+                        <tbody>
+                            {surveyList}
+                        </tbody>
                     </Table>
                 </Container>
             </div>
