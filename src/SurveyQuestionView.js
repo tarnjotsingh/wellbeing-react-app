@@ -7,9 +7,11 @@ class SurveyQuestionView extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            surveyId: '',
-            questionId: '',
-            question: {},
+            question: {
+                id: '',
+                question: '',
+                questionChoices: []
+            },
             modal: false
         };
 
@@ -32,44 +34,43 @@ class SurveyQuestionView extends Component {
         });
     }
 
-    updateQuestion(questionId, question) {
-        this.props.updateQuestionInList(questionId, question);
-        let tmp = {
-            id: questionId,
-            question: question
-        };
-        this.setState({question: tmp});
+    /**
+     * Called from child component to update the values displayed in this component.
+     * Calls updateQuestionInList in parent component SurveyQuestionList
+     *
+     * @param question - Question object to use to update this components values with.
+     */
+    updateQuestion(question) {
+        this.props.updateQuestionInList(question);
+        this.setState({question: question});
     }
 
     render() {
-        const {surveyId, questionId, question} = this.state;
+        const {question} = this.state;
         // Return rows for each of the questions
-        // const choices = questionChoices.map(c => {
-        //     return (
-        //         <tr>
-        //             <th>{c.id}</th>
-        //             <td>{c.choice}</td>
-        //             <td>{c.weight}</td>
-        //         </tr>
-        //     )
-        // });
-        //console.log("Question Id: " + questionId);
+        const choices = question.questionChoices.map(c => {
+            return (
+                <tr key={c.id}>
+                    <th>{c.id}</th>
+                    <td>{c.choice}</td>
+                    <td>{c.weight}</td>
+                </tr>
+            )
+        });
+
         return (
             <div key={question.id}>
                 <h5>{question.question}</h5>
                 <ButtonGroup>
-                    {/*Hitting edit can bring up a modal thing that will let the user edit the question without navigating to another screen*/}
-                    {/*<Button size="sm" color="primary" tag={Link} to={'/surveys/'}>Edit</Button>*/}
-                    {/*<Button size="sm" color="primary" onClick={this.hmm}>Edit</Button>*/}
-                    {/*<SurveyQuestionEdit surveyId={surveyId} questionId={questionId} buttonLabel="Edit"/>*/}
                     <SurveyQuestionEdit buttonLabel="Edit"
                                         surveyId={this.props.surveyId}
                                         questionId={this.props.questionId}
-                                        question={question.question}
+                                        question={question}
                                         updateQuestion={this.updateQuestion.bind(this)}/>
                     {' '}
                     <Button size="sm" color="danger" onClick={() => this.props.removeHandler(1, question.id)}>Delete</Button>
                 </ButtonGroup>
+                {/*Basically want to make this table show all of the choices for each of the questions and make them editable.*/}
                 <Table>
                     <thead>
                     <tr>
@@ -79,17 +80,9 @@ class SurveyQuestionView extends Component {
                     </tr>
                     </thead>
 
+                    {/*Use the mapped result from the choices function as the body.*/}
                     <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>First choice</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">2</th>
-                        <td>Second choice</td>
-                        <td>2</td>
-                    </tr>
+                    {choices}
                     </tbody>
                 </Table>
                 <br/>

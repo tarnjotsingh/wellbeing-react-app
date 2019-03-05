@@ -36,7 +36,9 @@ class SurveyQuestionList extends Component {
          console.log(this.state.questions);
     }
 
-    // Send a request to remove this question
+    /**
+     * Send a REST request to remove the specified question.
+     */
     async removeQuestion(surveyId, id) {
         console.log("Remove question: " + id);
         console.log(...this.state.questions);
@@ -56,28 +58,30 @@ class SurveyQuestionList extends Component {
         });
     }
 
-    addNewQuestionToList(questionId, question) {
+    addToList(questionId, question) {
         let newQuestion = {id: questionId, question: question};
+        // Concat to add the new question to the end of the list
         this.setState({questions: this.state.questions.concat(newQuestion)});
     }
 
-    updateQuestionInList(questionId, question) {
+    updateQuestionInList(question) {
+        //question should be json object being passed through
         // Figure out the index of the object that needs to be updated
         let updatedQuestions = this.state.questions;
-        const index = updatedQuestions.findIndex(q => q.id === questionId);
+        console.log(question);
+        const index = updatedQuestions.findIndex(q => q.id === question.id);
 
-        console.log("Question with id: " + questionId + " found at index:" + index);
+        console.log("Question with id: " + question.id + " found at index:" + index);
         console.log(updatedQuestions[index]);
-        // Update the local question with the new value
-        updatedQuestions[index].question = question;
+
+        // Update the local question with the new json value
+        updatedQuestions[index] = question;
 
         console.log("Updated Question to be saved to list locally: ");
         console.log(updatedQuestions[index]);
 
-        // Apply it to the local state
+        // Apply the updated list to the local state
         this.setState({questions: updatedQuestions});
-
-        console.log(this.state.questions[index]);
     }
 
     render() {
@@ -94,7 +98,7 @@ class SurveyQuestionList extends Component {
                 <div>
                     <h3>Questions</h3>
                     {/*<Button size="sm" color="success" onClick={() => this.questionEdit.toggle}>New</Button>*/}
-                    <SurveyQuestionEdit surveyId={surveyId} buttonLabel="New" updateList={this.addNewQuestionToList.bind(this)}/>
+                    <SurveyQuestionEdit surveyId={surveyId} buttonLabel="New" addToList={this.addToList.bind(this)}/>
                     <p>
                         Will show all of the questions for a given survey here.
                         I think it will be a good idea to be able to click on each of the questions, have them

@@ -1,14 +1,13 @@
 import React, {Component} from 'react';
-import {Form, FormGroup, Label, Input, Button, Modal, ModalHeader, ModalFooter, ModalBody} from "reactstrap";
+import {Form, Input, Button, Modal, ModalHeader, ModalFooter, ModalBody} from "reactstrap";
+import ReactTable from "react-table";
+import 'react-table/react-table.css'
 
 class SurveyQuestionEdit extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            q: {
-                id: this.props.questionId,
-                question: this.props.question
-            },
+            q: this.props.question,
             surveyId: this.props.surveyId,
             modal: false
             // unmountOnClose: true
@@ -32,6 +31,17 @@ class SurveyQuestionEdit extends Component {
 
         let tempQuestion = {...this.state.q};
         tempQuestion[name] = value;
+
+        this.setState({q: tempQuestion});
+    }
+
+    handleQuestionChoiceChange(event) {
+        const target = event.target;
+        const name = target.name;
+        const value = target.value;
+
+        let tempQuestion = {...this.state.q};
+        tempQuestion["questionChoices"][name] = value;
 
         this.setState({q: tempQuestion});
     }
@@ -68,23 +78,56 @@ class SurveyQuestionEdit extends Component {
         console.log("Request body to send: ");
         console.log(request);
 
-        const response = await(await fetch(`/api/surveys/${surveyId}/questions`, request)).json();
+        const response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions`, request)).json();
 
-        console.log("Submitted new question to Survey Id: " + surveyId);
+        console.log("Submitted new question to Survey Id: " + this.props.surveyId);
+        console.log("Response: ");
         console.log(response);
 
         // Update the list of questions accordingly.
         if(request.method === 'PUT')
-            this.props.updateQuestion(response.id, response.question);
+            this.props.updateQuestion(response);
         else
-            this.props.addNewQuestionToList(response.id, response.question);
+            this.props.addToList(response.id, response);
     }
+
+    //Snippet from: https://medium.freecodecamp.org/how-to-build-a-real-time-editable-datagrid-in-react-c13a37b646ec
+    renderEditable = cellInfo => {
+        return (
+            <div
+                style={{ backgroundColor: "#fafafa" }}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={e => {
+                    const data = [...this.state.q.questionChoices];
+                    data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
+                    this.setState({question:{questionChoices: data}});
+                }}
+                dangerouslySetInnerHTML={{
+                    __html: this.state.q.questionChoices[cellInfo.index][cellInfo.column.id]
+                }}
+            />
+        );
+    };
 
     render() {
         const {q} = this.state;
         const modalTitle = this.props.questionId ? "Edit Question" : "New Question";
         const buttonColor = this.props.questionId ? "primary" : "success";
-        //console.log(`q.id: ${this.props.questionId}\nq.question: ${this.props.question}\nsurveyId: ${this.props.surveyId}`);
+
+        const columns = [{
+            Header: 'ID',
+            accessor: 'id',
+            Cell: this.renderEditable
+        }, {
+            Header: 'Choice',
+            accessor: 'choice',
+            Cell: this.renderEditable
+        }, {
+            Header: 'Weight',
+            accessor: 'weight',
+            Cell: this.renderEditable
+        }];
 
         return (
             <>
@@ -96,6 +139,14 @@ class SurveyQuestionEdit extends Component {
                         <ModalBody>
                             <Input type="text" name="question" id="question"  value={q.question || ''}
                                    onChange={this.handleQuestionChange} autoComplete="Type in your question here"/>
+
+                            {/*Using ReactTable as a method to display all of the items*/}
+                            <ReactTable
+                                data={q.questionChoices}
+                                columns={columns}
+                                defaultPageSize={4}
+                                pageSizeOptions={[4, 8]}
+                                />
                         </ModalBody>
 
                         <ModalFooter>
@@ -110,6 +161,14 @@ class SurveyQuestionEdit extends Component {
     }
 
 }
+
+SurveyQuestionEdit.defaultProps = {
+    question: {
+        id:null,
+        question: null,
+        questionChoices: []
+    }
+};
 
 export default SurveyQuestionEdit;
 
