@@ -58,27 +58,29 @@ class SurveyQuestionList extends Component {
         });
     }
 
-    addToList(questionId, question) {
-        let newQuestion = {id: questionId, question: question};
+    addToList(question) {
         // Concat to add the new question to the end of the list
-        this.setState({questions: this.state.questions.concat(newQuestion)});
+        console.log("Adding new question to the question list");
+        this.setState({questions: this.state.questions.concat(question)});
     }
 
     updateQuestionInList(question) {
+        console.log("Updating question in list...");
         //question should be json object being passed through
         // Figure out the index of the object that needs to be updated
         let updatedQuestions = this.state.questions;
         console.log(question);
         const index = updatedQuestions.findIndex(q => q.id === question.id);
 
-        console.log("Question with id: " + question.id + " found at index:" + index);
-        console.log(updatedQuestions[index]);
+        console.debug("Question with id: " + question.id + " found at index:" + index);
+        console.debug(updatedQuestions[index]);
 
         // Update the local question with the new json value
+        //updatedQuestions[index] = question;
         updatedQuestions[index] = question;
 
-        console.log("Updated Question to be saved to list locally: ");
-        console.log(updatedQuestions[index]);
+        console.debug("Updated Question to be saved to list locally: ");
+        console.debug(updatedQuestions[index]);
 
         // Apply the updated list to the local state
         this.setState({questions: updatedQuestions});

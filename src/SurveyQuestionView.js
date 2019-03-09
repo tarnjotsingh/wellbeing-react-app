@@ -41,6 +41,7 @@ class SurveyQuestionView extends Component {
      * @param question - Question object to use to update this components values with.
      */
     updateQuestion(question) {
+        console.log("Updating question view...");
         this.props.updateQuestionInList(question);
         this.setState({question: question});
     }
