@@ -67,6 +67,10 @@ class SurveyQuestionEdit extends Component {
         event.preventDefault();
     }
 
+    processResponse(response) {
+        alert(response);
+    }
+
     /**
      * Perform a PUT or POST request against the REST endpoint to update or create a question choice.
      *
@@ -74,9 +78,19 @@ class SurveyQuestionEdit extends Component {
      * @returns {Promise<q.questionChoices>}
      */
     async submitQuestionChoice(choice) {
-
+        // Need to properly understand how to do these async requests.
+        //https://dev.to/johnpaulada/synchronous-fetch-with-asyncawait
         console.log("Attempting to submit choice with body: ");
         console.log(choice);
+
+        const qId = this.state.q.id;
+
+        if(qId === null) {
+            throw {
+                name: "Question ID",
+                message: "Found null value for question Id.\nAborting choice submit."
+            };
+        }
 
         let request = {
             method: (choice.id) ? 'PUT' : 'POST',
@@ -90,16 +104,7 @@ class SurveyQuestionEdit extends Component {
         console.log("Request to send for question choice: ");
         console.log(request);
 
-        let response = null;
-        const qId = this.state.q.id;
-
-        try {
-            response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${qId}/choices`, request)).json();
-        }
-        catch(e) {
-            console.error(e);
-            console.log(response);
-        }
+        let response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${qId}/choices`, request)).json();
 
         console.log("Submitted choice");
         console.log(response);
@@ -119,7 +124,7 @@ class SurveyQuestionEdit extends Component {
      * Send PUT/POST request to create new question or updated existing one.
      *
      * @param question
-     * @returns {Promise<void>}
+     * @returns {Promise<question>}
      */
     async handleSubmitQuestion(question) {
         console.log("Attempting to submit question...");
@@ -147,7 +152,6 @@ class SurveyQuestionEdit extends Component {
         const response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions`, request)).json();
 
         console.log("Submitted new question to Survey Id: " + this.props.surveyId);
-        console.log("Response: ");
         console.log(response);
 
          this.setState({q: response});
@@ -168,6 +172,7 @@ class SurveyQuestionEdit extends Component {
         // PUT/POST question, await to ensure that this method has finished executing before the next step.
         let questionPromise = await this.handleSubmitQuestion(q);
 
+
         // Now that the question has been created (if it hasn't already), PUT/POST the choices for the question
         let choicesPromise = await this.handleSubmitQuestionChoices(q.questionChoices);
 
@@ -185,26 +190,20 @@ class SurveyQuestionEdit extends Component {
         console.log("Get request result: ");
         console.log(response);
 
-        // Will also need to update the local state from the get to signify that any new choices have been accepted and have IDs set.
-        this.setState({q: response});
-
         // Check if the ID exists and use that to check if which method to poke
-        if(q.id === null) this.props.addToList(response);
-        else this.props.updateQuestion(response);
+        if(q.id === null) {
+            // If the id was initially set to null, means we're dealing with a new question.
+            // Reset this component with a blank question after adding to list.
+            this.setState({q : {id: null, question: null, questionChoices: []}});
+            this.props.addToList(response);
+        }
+        else {
+            // Will also need to update the local state from the get to signify that any new choices have been accepted and have IDs set.
+            this.setState({q: response});
+            this.props.updateQuestion(this.state.q);
+        }
 
     }
-
-    /**
-     * I think in order handle CRUD against question choices, the requests need to be broken down especially
-     * when you consider that this component will need to trigger they in a certain order.
-     *
-     * Some sort of buffer can be used to store the questions that are going to be added, the ones to be deleted
-     * and just inline edit the ones that already exist in the array and do a PUT request with the entire array
-     * of existing question choices for it to work.
-     *
-     * I will need to do a bit more research to see if there is a better way or if this is likely the best way to do
-     * it with regards to REST practicies.
-     */
 
     /**
      * Basic method to just add an empty question choice to the state for editing purposes.
