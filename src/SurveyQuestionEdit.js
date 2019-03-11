@@ -9,10 +9,7 @@ class SurveyQuestionEdit extends Component {
         this.state = {
             q: this.props.question,
             surveyId: this.props.surveyId,
-            newChoice: {
-                choice: '',
-                weight: ''
-            },
+            defaultQuestion: this.props.question,
             modal: false
             // unmountOnClose: true
         };
@@ -58,34 +55,35 @@ class SurveyQuestionEdit extends Component {
         this.setState({newChoice: updatedNewChoice});
     }
 
-    handleAddChoice(event) {
-        this.q.questionChoices.add({
-            choice: this.state.choice,
-            weight: this.state.weight
+    /**
+     * Basic method to just add an empty question choice to the state for editing purposes.
+     */
+    addEmptyChoice() {
+        const {q} = this.state;
+        q.questionChoices.push({
+            id: null,
+            choice: "New choice",
+            weight: 1
         });
-        this.setState({ choice: "", weight: "" });
-        event.preventDefault();
+
+        this.setState({q})
     }
 
-    processResponse(response) {
-        alert(response);
-    }
+
 
     /**
      * Perform a PUT or POST request against the REST endpoint to update or create a question choice.
      *
      * @param choice JSON for a single question choice
-     * @returns {Promise<q.questionChoices>}
+     * @returns {Promise<>}
      */
-    async submitQuestionChoice(choice) {
+    async submitQuestionChoice(choice, questionId) {
         // Need to properly understand how to do these async requests.
         //https://dev.to/johnpaulada/synchronous-fetch-with-asyncawait
         console.log("Attempting to submit choice with body: ");
         console.log(choice);
 
-        const qId = this.state.q.id;
-
-        if(qId === null) {
+        if(questionId === null) {
             throw {
                 name: "Question ID",
                 message: "Found null value for question Id.\nAborting choice submit."
@@ -101,23 +99,25 @@ class SurveyQuestionEdit extends Component {
             body: JSON.stringify(choice)
         };
 
-        console.log("Request to send for question choice: ");
-        console.log(request);
+        // console.log("Request to send for question choice: ");
+        // console.log(request);
 
-        let response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${qId}/choices`, request)).json();
+        return await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${questionId}/choices`, request)).json();
 
-        console.log("Submitted choice");
-        console.log(response);
+        // console.log("Submitted choice");
+        // console.log(response.json());
     }
 
     // Method to handle the submitting of question choices to the backend server
     //Helper method for handleSubmitQuestion method
-    async handleSubmitQuestionChoices(choices) {
+    //https://flaviocopes.com/javascript-async-await-array-map/
+    async handleSubmitQuestionChoices(choices, questionId) {
         console.log("Attempting to process choices...");
         // Will need to do request sequentially to figure what method needs to be done
         // i.e check if there is an ID available and determine if a PUT or POST request
         // needs to be done.
-        choices.map(choice => this.submitQuestionChoice(choice));
+        // Have to use Promise.all and use await to ensure that all requests have actually finished.
+        return await Promise.all(choices.map(choice => this.submitQuestionChoice(choice, questionId)));
     }
 
     /**
@@ -148,17 +148,19 @@ class SurveyQuestionEdit extends Component {
 
         console.log("Request body to send: ");
         console.log(request);
-
-        const response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions`, request)).json();
-
-        console.log("Submitted new question to Survey Id: " + this.props.surveyId);
+        let response = await fetch(`/api/surveys/${this.props.surveyId}/questions`, request);
         console.log(response);
 
-         this.setState({q: response});
+        return await response.json();
+
+        // console.log("Submitted new question to Survey Id: " + this.props.surveyId);
+        // console.log(response);
+        //
+        //  this.setState({q: response});
     }
 
     async handleSubmitFullQuestion(event) {
-        const {q, surveyId} = this.state;
+        let {q, surveyId} = this.state;
         console.log("Attempting to submit question with question choices...");
         event.preventDefault();     // Stops the page from reloading.
 
@@ -170,13 +172,17 @@ class SurveyQuestionEdit extends Component {
             };
 
         // PUT/POST question, await to ensure that this method has finished executing before the next step.
-        let questionPromise = await this.handleSubmitQuestion(q);
+        const questionResponse = await this.handleSubmitQuestion(q);
+        console.log("Question response: ");
+        console.log(questionResponse);
+
+        // // Now that the question has been created (if it hasn't already), PUT/POST the choices for the question
+        const choicesResponse = await this.handleSubmitQuestionChoices(q.questionChoices, questionResponse.id);
+        console.log("Choices response:");
+        console.log(choicesResponse);
 
 
-        // Now that the question has been created (if it hasn't already), PUT/POST the choices for the question
-        let choicesPromise = await this.handleSubmitQuestionChoices(q.questionChoices);
-
-        let request = {
+        const request = {
             method: 'GET',
             headers: {
                 'Accept' : 'application/json',
@@ -185,38 +191,31 @@ class SurveyQuestionEdit extends Component {
         };
 
         //Then do get request for the question now that both REST requests have finished
-        let response = await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${this.state.q.id}`, request)).json();
+        let response = await fetch(`/api/surveys/${this.props.surveyId}/questions/${questionResponse.id}`, request);
 
-        console.log("Get request result: ");
+        console.log("Get request response: ");
         console.log(response);
+
+        response = await response.json();
 
         // Check if the ID exists and use that to check if which method to poke
         if(q.id === null) {
             // If the id was initially set to null, means we're dealing with a new question.
             // Reset this component with a blank question after adding to list.
-            this.setState({q : {id: null, question: null, questionChoices: []}});
+            q.id = null;
+            q.question = null;
+            q.questionChoices = [];
+            //Add the question based on the response json value.
             this.props.addToList(response);
         }
         else {
             // Will also need to update the local state from the get to signify that any new choices have been accepted and have IDs set.
-            this.setState({q: response});
+            q.id = response;
+            q.question = response.question;
+            q.questionChoices = response.questionChoices;
             this.props.updateQuestion(this.state.q);
         }
-
-    }
-
-    /**
-     * Basic method to just add an empty question choice to the state for editing purposes.
-     */
-    addEmptyChoice() {
-        const {q} = this.state;
-        q.questionChoices.push({
-            id: null,
-            choice: "new",
-            weight: 0
-        });
-
-        this.setState({q:q})
+        this.setState({q});
     }
 
     //Snippet from: https://medium.freecodecamp.org/how-to-build-a-real-time-editable-datagrid-in-react-c13a37b646ec
