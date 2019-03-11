@@ -66,9 +66,6 @@ class SurveyList extends Component {
                 <td style={{whiteSpace: 'nowrap'}}>{survey.name}</td>
                 <td>{survey.description}</td>
                 <td>
-                    <Button size="sm" color="info" tag={Link} to={"/surveys/" + survey.id + "/questions/"}>Questions</Button>
-                </td>
-                <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/surveys/" + survey.id}>Edit</Button>
                         <Button size="sm" color="danger" onClick={() => this.remove(survey.id)}>Delete</Button>
@@ -95,7 +92,6 @@ class SurveyList extends Component {
                             <tr>
                                 <th width="20%">Name</th>
                                 <th width="50%">Description</th>
-                                <th width="25%">Manage Questions</th>
                                 <th width="10%">Actions</th>
                             </tr>
                         </thead>
