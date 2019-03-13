@@ -101,15 +101,6 @@ class SurveyQuestionList extends Component {
                     <h3>Questions</h3>
                     {/*<Button size="sm" color="success" onClick={() => this.questionEdit.toggle}>New</Button>*/}
                     <SurveyQuestionEdit surveyId={surveyId} buttonLabel="New" addToList={this.addToList.bind(this)}/>
-                    <p>
-                        Will show all of the questions for a given survey here.
-                        I think it will be a good idea to be able to click on each of the questions, have them
-                        expand and show all of the potential choices and add choices to those questions.
-                        Expansion may just be where you click on the question and there is
-                        menu that expands underneath the question
-                        that was clicked and have everything there or it will be to navigate to another page thing that, akin to how
-                        it is currently being done for basic survey stuff, and edit everything there.
-                    </p>
                 </div>
                 <br/>
                 {questionList}
