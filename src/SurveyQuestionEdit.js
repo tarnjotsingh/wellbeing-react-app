@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Form, Input, Button, Modal, ModalHeader, ModalFooter, ModalBody} from "reactstrap";
 import ReactTable from "react-table";
 import 'react-table/react-table.css'
+import { MdDelete } from "react-icons/md"
 
 class SurveyQuestionEdit extends Component {
     constructor(props) {
@@ -9,7 +10,7 @@ class SurveyQuestionEdit extends Component {
         this.state = {
             q: this.props.question,
             surveyId: this.props.surveyId,
-            defaultQuestion: this.props.question,
+            choicesToDelete: [],
             modal: false
             // unmountOnClose: true
         };
@@ -17,11 +18,20 @@ class SurveyQuestionEdit extends Component {
         this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this);
         this.handleQuestionChoiceChange = this.handleQuestionChoiceChange.bind(this);
         this.handleSubmitFullQuestion = this.handleSubmitFullQuestion.bind(this);
-        this.addEmptyChoice = this.addEmptyChoice.bind(this);
+        this.handleRemoveQuestionChoice = this.handleRemoveQuestionChoice.bind(this);
+        this.handleSubmitDeleteQuestionChoices = this.handleSubmitDeleteQuestionChoices.bind(this);
+        this.submitDeleteQuestionChoice = this.submitDeleteQuestionChoice.bind(this);
         this.toggle = this.toggle.bind(this);
+        this.addEmptyChoice = this.addEmptyChoice.bind(this);
         // this.changeUnmountOnClose = this.changeUnmountOnClose.bind(this);
     }
 
+    componentWillUnmount() {
+    }
+
+    /**
+     * Method for toggling the modal window.
+     */
     toggle() {
         this.setState(prevState => ({
             modal: !prevState.modal
@@ -56,6 +66,26 @@ class SurveyQuestionEdit extends Component {
     }
 
     /**
+     * Method for marking a question choice to be removed.
+     * Need to remove a question from the current question list so that the table is updated correctly.
+     *
+     * @param event
+     */
+    handleRemoveQuestionChoice(row) {
+        console.log("Attempting to remove question choice at index " + row.index);
+       // Need to somehow find the
+        let q = this.state.q;
+        let choicesToDelete = this.state.choicesToDelete;
+        // Add the question to delete the in-state array if an ID exists.
+        if(q.questionChoices[row.index].id !== null)
+            choicesToDelete.push(q.questionChoices[row.index]);
+        // Use splice to remove the choice at the given array index
+        q.questionChoices.splice(row.index, 1);
+        //Update the local state
+        this.setState({q, choicesToDelete});
+    }
+
+    /**
      * Basic method to just add an empty question choice to the state for editing purposes.
      */
     addEmptyChoice() {
@@ -68,8 +98,6 @@ class SurveyQuestionEdit extends Component {
 
         this.setState({q})
     }
-
-
 
     /**
      * Perform a PUT or POST request against the REST endpoint to update or create a question choice.
@@ -99,18 +127,19 @@ class SurveyQuestionEdit extends Component {
             body: JSON.stringify(choice)
         };
 
-        // console.log("Request to send for question choice: ");
-        // console.log(request);
-
         return await(await fetch(`/api/surveys/${this.props.surveyId}/questions/${questionId}/choices`, request)).json();
-
-        // console.log("Submitted choice");
-        // console.log(response.json());
     }
 
-    // Method to handle the submitting of question choices to the backend server
-    //Helper method for handleSubmitQuestion method
-    //https://flaviocopes.com/javascript-async-await-array-map/
+    /**
+     * Method to map out requests to update or create question choices.
+     * Method to handle the submitting of question choices to the backend server
+     * Helper method for handleSubmitQuestion method
+     * https://flaviocopes.com/javascript-async-await-array-map/
+     *
+     * @param choices
+     * @param questionId
+     * @returns {Promise<any[]>}
+     */
     async handleSubmitQuestionChoices(choices, questionId) {
         console.log("Attempting to process choices...");
         // Will need to do request sequentially to figure what method needs to be done
@@ -118,6 +147,40 @@ class SurveyQuestionEdit extends Component {
         // needs to be done.
         // Have to use Promise.all and use await to ensure that all requests have actually finished.
         return await Promise.all(choices.map(choice => this.submitQuestionChoice(choice, questionId)));
+    }
+
+    /**
+     * Method to send a delete request to delete the given choice.
+     *
+     * @param choice
+     * @param questionId
+     * @returns {Promise<Response>}
+     */
+    async submitDeleteQuestionChoice(choice, questionId) {
+        console.log("Attempting to delete the following choice: ");
+        console.log(choice);
+
+        const request = {
+            method: 'DELETE',
+            headers: {
+                'Accept' : 'application/json',
+                'Content-Type': 'application/json'
+            }
+        };
+
+        return await fetch(`/api/surveys/${this.props.surveyId}/questions/${questionId}/choices/${choice.id}`, request);
+    }
+
+    /**
+     * Method to map out requests to delete question choices that have been marked to be removed.
+     *
+     * @param choices
+     * @param questionId
+     * @returns {Promise<any[]>}
+     */
+    async handleSubmitDeleteQuestionChoices(choices, questionId) {
+        console.log("Attempting to delete given set of choices");
+        return Promise.all(choices.map(choice => this.submitDeleteQuestionChoice(choice, questionId)));
     }
 
     /**
@@ -159,8 +222,14 @@ class SurveyQuestionEdit extends Component {
         //  this.setState({q: response});
     }
 
+    /**
+     * Wrapper method for handling submitting all the components of a new/existing question
+     * Handles editing for question title.
+     * Handles adding/updating existing choices.
+     * Handles the deletion of question choices.
+     */
     async handleSubmitFullQuestion(event) {
-        let {q, surveyId} = this.state;
+        let {q, choicesToDelete, surveyId} = this.state;
         console.log("Attempting to submit question with question choices...");
         event.preventDefault();     // Stops the page from reloading.
 
@@ -176,10 +245,15 @@ class SurveyQuestionEdit extends Component {
         console.log("Question response: ");
         console.log(questionResponse);
 
-        // // Now that the question has been created (if it hasn't already), PUT/POST the choices for the question
+        // Now that the question has been created (if it hasn't already), PUT/POST the choices for the question
         const choicesResponse = await this.handleSubmitQuestionChoices(q.questionChoices, questionResponse.id);
         console.log("Choices response:");
         console.log(choicesResponse);
+
+        // Then carry out the delete requests for all the choices that have been marked to be removed.
+        const deleteChoicesResponse = await this.handleSubmitDeleteQuestionChoices(choicesToDelete, questionResponse.id);
+        console.log("Delete choices response:");
+        console.log(deleteChoicesResponse);
 
 
         const request = {
@@ -210,12 +284,14 @@ class SurveyQuestionEdit extends Component {
         }
         else {
             // Will also need to update the local state from the get to signify that any new choices have been accepted and have IDs set.
-            q.id = response;
+            q.id = response.id;
             q.question = response.question;
             q.questionChoices = response.questionChoices;
-            this.props.updateQuestion(this.state.q);
+            this.props.updateQuestion(q);
         }
-        this.setState({q});
+        // Empty the choices to delete array
+        choicesToDelete = [];
+        this.setState({q, choicesToDelete});
     }
 
     //Snippet from: https://medium.freecodecamp.org/how-to-build-a-real-time-editable-datagrid-in-react-c13a37b646ec
@@ -251,7 +327,17 @@ class SurveyQuestionEdit extends Component {
         }, {
             Header: 'Weight',
             accessor: 'weight',
-            Cell: this.renderEditable
+            Cell: this.renderEditable,
+            width: 80
+        },  {
+            id:'delete',
+            width:30,
+
+            Cell: (row)=> (
+                <span style={{cursor:'pointer'}} onClick={() => this.handleRemoveQuestionChoice(row)}>
+                    <MdDelete/>
+                </span>
+            )
         }];
 
         return (
@@ -285,7 +371,6 @@ class SurveyQuestionEdit extends Component {
             </>
         );
     }
-
 }
 
 SurveyQuestionEdit.defaultProps = {
