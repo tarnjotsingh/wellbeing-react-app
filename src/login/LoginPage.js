@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Alert, Button, ButtonGroup, Form, FormGroup, Input, Label} from 'reactstrap';
+import {Alert, Button, ButtonGroup, Container, Form, FormGroup, Input, Label} from 'reactstrap';
 import AppNavbar from '../AppNavbar'
 import AuthService from '../service/AuthService';
 
@@ -57,31 +57,33 @@ class LoginPage extends Component {
             <div>
                 <AppNavbar/>
 
-                <Form onSubmit={e => this.onSubmit(e)}>
-                    <FormGroup>
-                        <h3>Login</h3>
+                <Container>
+                    <br/>
+                    <Form onSubmit={e => this.onSubmit(e)}>
+                        <FormGroup>
+                            <h5>Login</h5>
+                            <Input
+                                name='username'
+                                placeholder='Username'
+                                onChange={e => this.onChange(e)}
+                                value={this.state.username}/>
+                            <Input
+                                name='password'
+                                placeholder='Password'
+                                type='password'
+                                onChange={e => this.onChange(e)}
+                                value={this.state.password}/>
+                        </FormGroup>
 
-                        <Input
-                            name='username'
-                            placeholder='Username'
-                            onChange={e => this.onChange(e)}
-                            value={this.state.username}/>
-                        <Input
-                            name='password'
-                            placeholder='Password'
-                            type='password'
-                            onChange={e => this.onChange(e)}
-                            value={this.state.password}/>
-                    </FormGroup>
+                        <FormGroup>
+                            <ButtonGroup>
+                                <Button size="md" color="primary" type="submit">Login</Button>
+                            </ButtonGroup>
+                        </FormGroup>
 
-                    <FormGroup>
-                        <ButtonGroup>
-                            <Button size="md" color="primary" type="submit">Login</Button>
-                        </ButtonGroup>
-                    </FormGroup>
-
-                    <Alert color="danger" isOpen={this.state.status}>Bad Credentials</Alert>
-                </Form>
+                        <Alert color="danger" isOpen={this.state.status}>Bad Credentials</Alert>
+                    </Form>
+                </Container>
             </div>
         );
     }

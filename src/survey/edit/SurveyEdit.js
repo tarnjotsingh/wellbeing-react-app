@@ -108,7 +108,7 @@ class SurveyEdit extends Component {
         return data.map((question) => {
              return <div key={question.id} className="questionItem">
                  <ul>
-                      Question:
+                     Question:
                      <li>ID: {question.id}</li>
                      <li>Question: {question.question}</li>
                      Choices:

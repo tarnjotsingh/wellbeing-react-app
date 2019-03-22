@@ -5,7 +5,15 @@ import decode from "jwt-decode";
  * for authorizing the use of endpoints that allowed per user roles.
  */
 class AuthService {
-
+    /**
+     * Both /oauth/token and /oauth/check_token endpoints need the same request headers.
+     * Both require the basic auth needed for querying the oauth endpoint.
+     * @type {{headers: {Authorization: string}, method: string}}
+     */
+    static request = {
+        method: "POST",
+        headers: {'Authorization': 'Basic Zmlyc3QtY2xpZW50OmNsaWVudC1zZWNyZXQ=',}
+    };
 
     /**
      * Method requests for a new token based on the username and password.
@@ -16,12 +24,9 @@ class AuthService {
      */
     static async getToken(username, password) {
         let path = `/oauth/token?grant_type=password&username=${username}&password=${password}`;
-        let request = {
-            Authorization: `Basic ${localStorage.getItem("clientAuth")}`,
-            method: "POST",
-        };
+
         // Send the POST request to get authenticated and get a token to use against requests.
-        const response = await fetch(path, request)
+        const response = await fetch(path, this.request)
             .then(response => {
                 //console.log("Auth service...");
                 return response.json();
@@ -49,12 +54,8 @@ class AuthService {
      */
     static async validateToken(token) {
         let path = `/oauth/check_token?token=${token}`;
-        let request = {
-            Authorization: `Basic ${localStorage.getItem("clientAuth")}`,
-            method: "GET",
-        };
 
-        const response = await fetch(path, request)
+        const response = await fetch(path, this.request)
             .then(response => {
                 //console.log("Validating token...");
                 return response;
@@ -81,7 +82,6 @@ class AuthService {
         const token = localStorage.getItem("accessToken");
         const refreshToken = localStorage.getItem("refreshToken");
         if(!token || !refreshToken) {
-            console.error("Access token or refresh token...");
             return false;
         }
         try {

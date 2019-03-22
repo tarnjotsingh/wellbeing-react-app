@@ -27,19 +27,18 @@ class SurveyList extends Component {
         // Set the isLoading flag to false.
         let request = {
             method: 'GET',
-            headers: {'Authorization': localStorage.getItem("bearer")},
+            headers: {'Authorization': localStorage.getItem('bearer')},
         };
         console.log(request);
         let response = await fetch('api/surveys', request)
             .then(response => {
-                response.json();
-                console.log(response);
+                return response.json();
             })
             .then(data => this.setState({surveys: data, isLoading: false}));
         console.log(response);
 
         //console.log(this.state.surveys);
-    }z
+    }
 
 
     // Remove a survey
@@ -50,7 +49,7 @@ class SurveyList extends Component {
             `api/surveys/${id}`,
             {
                 method: 'DELETE',
-                headers: {'Authorization': localStorage.getItem("bearer")}
+                headers: {'Authorization': localStorage.getItem('bearer')}
             }).then(() => {
                 let updatedSurveys = [...this.state.surveys].filter(i => i.id !== id);
                 this.setState({surveys: updatedSurveys})

@@ -30,10 +30,6 @@ const AuthRoute = ({ component: Component, ...rest }) => (
 );
 
 class App extends Component {
-    componentDidMount() {
-        // Just save the client auth here to make our lives easier.
-        localStorage.setItem("clientAuth","Zmlyc3QtY2xpZW50OmNsaWVudC1zZWNyZXQ=");
-    }
 
     render() {
         return(
