@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 //import {Link} from "react-router-dom";
 import SurveyQuestionView from './SurveyQuestionView'
 import SurveyQuestionEdit from "./SurveyQuestionEdit";
+import {defaultAuthHeaders} from "../../service/AuthService";
 
 
 class SurveyQuestionList extends Component {
@@ -26,9 +27,12 @@ class SurveyQuestionList extends Component {
     async componentWillReceiveProps(nextProps, nextContext) {
         this.setState({surveyId: nextProps.surveyId});
         console.log("Detected survey id: " + this.state.surveyId);
-
+        let request = {
+            method: 'GET',
+            headers: {'Authorization': localStorage.getItem("bearer")}
+        };
         // FETCH THE DATA!
-        fetch(`/api/surveys/${nextProps.surveyId}/questions`)
+        fetch(`/api/surveys/${nextProps.surveyId}/questions`, request)
             .then(request => request.json())
             .then(data => this.setState({questions: data}));
 

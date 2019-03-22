@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink} from 'reactstrap';
 import { Link } from 'react-router-dom';
+import AuthService from './service/AuthService';
 
 class AppNavbar extends Component {
 
@@ -17,6 +18,13 @@ class AppNavbar extends Component {
     }
 
     render() {
+        const logout = AuthService.checkTokenExpired() ? (
+            <NavItem>
+                <NavLink tag={Link} to="login" onClick={AuthService.revokeAuth}>Logout</NavLink>
+            </NavItem>
+        ) : (<NavItem> </NavItem>);
+
+
         return (
             <Navbar color="dark" dark expand="md">
                 <NavbarBrand tag={Link} to="/">Home</NavbarBrand>
@@ -32,6 +40,7 @@ class AppNavbar extends Component {
                         <NavItem>
                             <NavLink href="https://csgitlab.reading.ac.uk/gv009864">CS-GitLab</NavLink>
                         </NavItem>
+                        {logout}
                     </Nav>
                 </Collapse>
             </Navbar>

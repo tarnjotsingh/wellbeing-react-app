@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {Button, ButtonGroup, Table} from 'reactstrap';
 import SurveyQuestionEdit from "./SurveyQuestionEdit";
+import {defaultAuthHeaders} from "../../service/AuthService";
 
 class SurveyQuestionView extends Component {
 
@@ -20,7 +21,11 @@ class SurveyQuestionView extends Component {
 
     async componentWillMount() {
         // Fetch the question!
-        const fetchedQuestion =  await (await fetch(`/api/surveys/${this.props.surveyId}/questions/${this.props.questionId}`)).json();
+        let request = {
+            method: 'GET',
+            headers: {'Authorization': localStorage.getItem("bearer")},
+        };
+        const fetchedQuestion =  await (await fetch(`/api/surveys/${this.props.surveyId}/questions/${this.props.questionId}`, request)).json();
         this.setState({question: fetchedQuestion});
         console.log("Fetched question: ");
         console.log(this.state.question);

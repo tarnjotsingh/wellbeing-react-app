@@ -3,6 +3,7 @@ import {Form, Input, Button, Modal, ModalHeader, ModalFooter, ModalBody} from "r
 import ReactTable from "react-table";
 import 'react-table/react-table.css'
 import { MdDelete } from "react-icons/md"
+import {defaultAuthHeaders} from "../../service/AuthService";
 
 class SurveyQuestionEdit extends Component {
     constructor(props) {
@@ -121,8 +122,9 @@ class SurveyQuestionEdit extends Component {
         let request = {
             method: (choice.id) ? 'PUT' : 'POST',
             headers: {
-                'Accept' : 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': localStorage.getItem("bearer")
             },
             body: JSON.stringify(choice)
         };
@@ -162,10 +164,7 @@ class SurveyQuestionEdit extends Component {
 
         const request = {
             method: 'DELETE',
-            headers: {
-                'Accept' : 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: {'Authorization': localStorage.getItem("bearer")}
         };
 
         return await fetch(`/api/surveys/${this.props.surveyId}/questions/${questionId}/choices/${choice.id}`, request);
@@ -203,8 +202,9 @@ class SurveyQuestionEdit extends Component {
         let request = {
             method: (question.id) ? 'PUT' : 'POST',
             headers: {
-                'Accept' : 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': localStorage.getItem("bearer")
             },
             body: JSON.stringify(question)
         };
@@ -215,11 +215,6 @@ class SurveyQuestionEdit extends Component {
         console.log(response);
 
         return await response.json();
-
-        // console.log("Submitted new question to Survey Id: " + this.props.surveyId);
-        // console.log(response);
-        //
-        //  this.setState({q: response});
     }
 
     /**
@@ -258,10 +253,7 @@ class SurveyQuestionEdit extends Component {
 
         const request = {
             method: 'GET',
-            headers: {
-                'Accept' : 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: {'Authorization': localStorage.getItem("bearer")}
         };
 
         //Then do get request for the question now that both REST requests have finished

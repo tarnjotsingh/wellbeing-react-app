@@ -5,7 +5,7 @@
 
 import React, {Component} from "react";
 import { Button, ButtonGroup, Container, Table} from 'reactstrap';
-import AppNavbar from './AppNavbar';
+import AppNavbar from '../../AppNavbar';
 import { Link } from 'react-router-dom'
 
 class SurveyList extends Component {
@@ -13,23 +13,33 @@ class SurveyList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            surveys: [],
+            surveys: this.props.surveys,
             isLoading: true
         };
         this.remove = this.remove.bind(this);
     }
 
     //Load the surveys into this component
-    componentDidMount() {
+    async componentDidMount() {
+        console.log("Getting survey list...");
         this.setState({isLoading: true});
         // Fetch the surveys from the REST endpoint and store locally
         // Set the isLoading flag to false.
-        fetch('api/surveys')
-            .then(response => response.json())
+        let request = {
+            method: 'GET',
+            headers: {'Authorization': localStorage.getItem("bearer")},
+        };
+        console.log(request);
+        let response = await fetch('api/surveys', request)
+            .then(response => {
+                response.json();
+                console.log(response);
+            })
             .then(data => this.setState({surveys: data, isLoading: false}));
+        console.log(response);
 
-        console.log(this.state.surveys);
-    }
+        //console.log(this.state.surveys);
+    }z
 
 
     // Remove a survey
@@ -40,10 +50,7 @@ class SurveyList extends Component {
             `api/surveys/${id}`,
             {
                 method: 'DELETE',
-                headers: {
-                    'Accept' : 'application/json',
-                    'Content-Type': 'application/json'
-                }
+                headers: {'Authorization': localStorage.getItem("bearer")}
             }).then(() => {
                 let updatedSurveys = [...this.state.surveys].filter(i => i.id !== id);
                 this.setState({surveys: updatedSurveys})
@@ -108,3 +115,8 @@ class SurveyList extends Component {
 
 // Export the class so that it can be used elsewhere when it's imported.
 export default SurveyList;
+
+SurveyList.defaultProps = {
+    surveys: [{id:0, name:"Nothing loaded yet"}, {id:1, name:"Nothing loaded yet"}],
+    isLoading: true
+};

@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import {Link} from "react-router-dom";
 import {Button, Container, Form, FormGroup, Input, Label, Table} from 'reactstrap';
-import AppNavbar from './AppNavbar';
+import AppNavbar from '../../AppNavbar';
 import SurveyQuestionList from './SurveyQuestionList';
+import {defaultAuthHeaders} from "../../service/AuthService";
 
 
 class SurveyEdit extends Component {
@@ -29,7 +30,12 @@ class SurveyEdit extends Component {
     // Ensure that the component mounted correctly. Data from REST api has been retrieved.
     async componentDidMount() {
         if(this.props.match.params.id !== 'new') {
-            const fetchedSurvey = await (await fetch(`/api/surveys/${this.props.match.params.id}`)).json();
+            let request = {
+                method: 'GET',
+                headers: {'Authorization': localStorage.getItem("bearer")}
+            };
+            const fetchedSurvey = await (await fetch(`/api/surveys/${this.props.match.params.id}`, request)).json();
+
             this.setState({survey: fetchedSurvey});
         }
     }
@@ -59,8 +65,9 @@ class SurveyEdit extends Component {
         let request = {
             method: (survey.id) ? 'PUT' : 'POST',
             headers: {
-                'Accept' : 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': localStorage.getItem("bearer")
             },
             body: JSON.stringify(survey)
         };
