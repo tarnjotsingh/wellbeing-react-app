@@ -54,7 +54,8 @@ class SurveyQuestionList extends Component {
                 method: 'DELETE',
                 headers: {
                     'Accept' : 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem("bearer")
                 }
             }).then(() => {
             let updatedQuestions = [...this.state.questions].filter(i => i.id !== id);
@@ -103,7 +104,6 @@ class SurveyQuestionList extends Component {
             <div>
                 <div>
                     <h3>Questions</h3>
-                    {/*<Button size="sm" color="success" onClick={() => this.questionEdit.toggle}>New</Button>*/}
                     <SurveyQuestionEdit surveyId={surveyId} buttonLabel="New" addToList={this.addToList.bind(this)}/>
                 </div>
                 <br/>

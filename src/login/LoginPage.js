@@ -48,7 +48,7 @@ class LoginPage extends Component {
                     this.setState({status: false})
                 }, 3000)
             });
-            throw Error("Failed to validate user token...");
+            console.error("Failed to validate user token...");
         }
     }
 

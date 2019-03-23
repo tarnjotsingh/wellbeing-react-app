@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Link} from "react-router-dom";
-import {Button, Container, Form, FormGroup, Input, Label, Table} from 'reactstrap';
+import {Button, ButtonGroup, Container, Form, FormGroup, Input, Label, Table} from 'reactstrap';
 import AppNavbar from '../../AppNavbar';
 import SurveyQuestionList from './SurveyQuestionList';
 import {defaultAuthHeaders} from "../../service/AuthService";
@@ -9,7 +9,7 @@ import {defaultAuthHeaders} from "../../service/AuthService";
 class SurveyEdit extends Component {
 
     emptySurvey =  {
-        id: '',
+        id: null,
         name: '',
         description: ''
     };
@@ -132,7 +132,12 @@ class SurveyEdit extends Component {
         console.log(survey);
         // If the id exists, show 'Edit Group' instead of 'Add Group'
         const title = <h2 className="mt-4">{survey.id ? 'Edit Survey' : 'Add Survey'}</h2>;
-        //const questionsList2 = survey.questions.map(question)
+        /*
+        If the id DOES NOT exist, then we want to hide the question list component.
+        This is an easy fix to prevent attempts to add questions to a survey that does
+        not exist yet.
+        */
+        const style = !survey.id ? {display: 'none'} : {};
 
         /* Will just display a form thing that gives you the ability to give
         new values for the name and description of the survey */
@@ -157,19 +162,16 @@ class SurveyEdit extends Component {
                                autoComplete="description"/>
                     </FormGroup>
 
-                    <FormGroup>
+                    <ButtonGroup>
                         <Button color="primary" type="submit">Save</Button> {' '}
                         <Button color="secondary" tag={Link} to="/survey_manager">Cancel</Button>
-                    </FormGroup>
+                    </ButtonGroup>
                 </Form>
 
             </Container>
 
-            <Container>
-
-
+            <Container style={style}>
                 <SurveyQuestionList surveyId={survey.id}/>
-
             </Container>
 
         </div>

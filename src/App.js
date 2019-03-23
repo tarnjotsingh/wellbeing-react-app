@@ -1,12 +1,17 @@
-import React, { Component } from 'react';
-import './App.css';
-import { BrowserRouter as Router, Route, Switch, Redirect} from "react-router-dom";
-import Home from './Home';
-import SurveyList from './survey/edit/SurveyList';
-import SurveyEdit from './survey/edit/SurveyEdit';
-import QuestionsList from './survey/edit/SurveyQuestionList';
-import LoginPage from './login/LoginPage'
-import AuthService from './service/AuthService';
+import React, { Component } from "react";
+import "./App.css";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from "react-router-dom";
+import Home from "./Home";
+import SurveyList from "./survey/edit/SurveyList";
+import SurveyEdit from "./survey/edit/SurveyEdit";
+import QuestionsList from "./survey/edit/SurveyQuestionList";
+import LoginPage from "./login/LoginPage";
+import AuthService from "./service/AuthService";
 
 /**
  * Wrapper method to check the authentication status of the user and redirect
@@ -20,30 +25,37 @@ import AuthService from './service/AuthService';
  * @constructor
  */
 const AuthRoute = ({ component: Component, ...rest }) => (
-    <Route {...rest} render={props => (
-        AuthService.checkTokenExpired() ? (
-            <Component {...props} />
-        ) : (
-            <Redirect to={{ pathname: '/login' }} />
-        )
-    )} />
+  <Route
+    {...rest}
+    render={props =>
+      AuthService.checkTokenExpired() ? (
+        <Component {...props} />
+      ) : (
+        <Redirect to={{ pathname: "/login" }} />
+      )
+    }
+  />
 );
 
 class App extends Component {
+  componentDidMount() {
+    // Just save the client auth here to make our lives easier.
+    localStorage.setItem("clientAuth", "Zmlyc3QtY2xpZW50OmNsaWVudC1zZWNyZXQ=");
+  }
 
-    render() {
-        return(
-            <Router>
-                <Switch>
-                    <Route path="/login" exact={true} component={LoginPage}/>
-                    <AuthRoute path="/" exact={true} component={Home}/>
-                    <AuthRoute path="/survey_manager" exact={true} component={SurveyList}/>
-                    <AuthRoute path="/surveys/:id" component={SurveyEdit}/>
-                    <AuthRoute path="/questions_test" component={QuestionsList}/>
-                </Switch>
-            </Router>
-        )
-    }
+  render() {
+    return (
+      <Router>
+        <Switch>
+          <Route path="/login" exact={true} component={LoginPage} />
+          <AuthRoute path="/" exact={true} component={Home} />
+          <AuthRoute path="/survey_manager" exact={true} component={SurveyList}/>
+          <AuthRoute path="/surveys/:id" component={SurveyEdit} />
+          <AuthRoute path="/questions_test" component={QuestionsList} />
+        </Switch>
+      </Router>
+    );
+  }
 }
 
 export default App;
